@@ -16,3 +16,46 @@ h1 {
 p {
     font-size: 16px;
 }
+
+h2 {
+    color: #2c3e50;
+    margin-top: 32px;
+}
+
+.projects {
+    list-style: none;
+    padding: 0;
+}
+
+.projects li {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    transition: all 0.15s;
+}
+
+.projects li:hover {
+    background: #e9f5ff;
+    border-color: #3498db;
+    transform: translateX(4px);
+}
+
+.projects a {
+    display: block;
+    font-size: 18px;
+    font-weight: 600;
+    color: #3498db;
+    text-decoration: none;
+    margin-bottom: 4px;
+}
+
+.projects a:hover {
+    color: #2980b9;
+}
+
+.projects span {
+    color: #6c757d;
+    font-size: 14px;
+}
