@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>단위 변환기</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    padding: 20px;
+  }
+  .app {
+    width: 100%;
+    max-width: 460px;
+    background: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+  h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #1c1c1e;
+    text-align: center;
+  }
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .tab {
+    padding: 10px 8px;
+    border: none;
+    border-radius: 12px;
+    background: #f2f2f7;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+  .tab:hover { background: #e5e5ea; }
+  .tab.active {
+    background: #667eea;
+    color: #fff;
+  }
+  .tabs.row2 { margin-bottom: 20px; }
+  .row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    align-items: center;
+  }
+  .field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  label {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+  }
+  select, input {
+    padding: 12px 14px;
+    border: 2px solid #e5e5ea;
+    border-radius: 12px;
+    font-size: 16px;
+    background: #fff;
+    outline: none;
+    transition: border 0.15s;
+    width: 100%;
+    font-family: inherit;
+  }
+  select:focus, input:focus { border-color: #667eea; }
+  input[type="number"] { font-weight: 600; }
+  .swap {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: #f2f2f7;
+    color: #333;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-top: 22px;
+  }
+  .swap:hover { background: #667eea; color: #fff; transform: rotate(180deg); }
+  .result-box {
+    margin-top: 16px;
+    padding: 18px;
+    background: linear-gradient(135deg, #f5f7ff 0%, #efe9ff 100%);
+    border-radius: 14px;
+    text-align: center;
+  }
+  .result-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 4px;
+  }
+  .result-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1c1c1e;
+    word-break: break-all;
+  }
+  .back {
+    display: block;
+    margin-top: 20px;
+    text-align: center;
+    color: #667eea;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  .back:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="app">
+    <h1>단위 변환기</h1>
+
+    <div class="tabs">
+      <button class="tab active" data-cat="length">길이</button>
+      <button class="tab" data-cat="weight">무게</button>
+      <button class="tab" data-cat="temperature">온도</button>
+    </div>
+    <div class="tabs row2">
+      <button class="tab" data-cat="volume">부피</button>
+      <button class="tab" data-cat="area">넓이</button>
+      <button class="tab" data-cat="time">시간</button>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="fromVal">입력</label>
+        <input type="number" id="fromVal" value="1" step="any">
+        <select id="fromUnit"></select>
+      </div>
+      <button class="swap" id="swap" title="단위 바꾸기">⇄</button>
+      <div class="field">
+        <label for="toVal">결과</label>
+        <input type="number" id="toVal" step="any" readonly>
+        <select id="toUnit"></select>
+      </div>
+    </div>
+
+    <div class="result-box">
+      <div class="result-label" id="resultLabel">결과</div>
+      <div class="result-value" id="resultText">—</div>
+    </div>
+
+    <a href="index.html" class="back">← 메인으로</a>
+  </div>
+
+<script>
+const UNITS = {
+  length: {
+    name: '길이',
+    base: 'm',
+    units: {
+      mm: { label: '밀리미터 (mm)', factor: 0.001 },
+      cm: { label: '센티미터 (cm)', factor: 0.01 },
+      m:  { label: '미터 (m)',     factor: 1 },
+      km: { label: '킬로미터 (km)', factor: 1000 },
+      in: { label: '인치 (in)',    factor: 0.0254 },
+      ft: { label: '피트 (ft)',    factor: 0.3048 },
+      yd: { label: '야드 (yd)',    factor: 0.9144 },
+      mi: { label: '마일 (mi)',    factor: 1609.344 },
+    },
+    default: ['m', 'ft'],
+  },
+  weight: {
+    name: '무게',
+    base: 'kg',
+    units: {
+      mg: { label: '밀리그램 (mg)', factor: 0.000001 },
+      g:  { label: '그램 (g)',     factor: 0.001 },
+      kg: { label: '킬로그램 (kg)', factor: 1 },
+      t:  { label: '톤 (t)',       factor: 1000 },
+      oz: { label: '온스 (oz)',    factor: 0.02834952 },
+      lb: { label: '파운드 (lb)',  factor: 0.45359237 },
+    },
+    default: ['kg', 'lb'],
+  },
+  temperature: {
+    name: '온도',
+    base: 'C',
+    units: {
+      C: { label: '섭씨 (°C)' },
+      F: { label: '화씨 (°F)' },
+      K: { label: '켈빈 (K)' },
+    },
+    default: ['C', 'F'],
+    custom: true,
+  },
+  volume: {
+    name: '부피',
+    base: 'L',
+    units: {
+      ml:    { label: '밀리리터 (mL)',     factor: 0.001 },
+      L:     { label: '리터 (L)',         factor: 1 },
+      m3:    { label: '세제곱미터 (m³)',   factor: 1000 },
+      tsp:   { label: '티스푼 (tsp, 미국)', factor: 0.00492892 },
+      tbsp:  { label: '테이블스푼 (tbsp)',  factor: 0.0147868 },
+      cup:   { label: '컵 (cup, 미국)',    factor: 0.236588 },
+      pt:    { label: '파인트 (pt, 미국)', factor: 0.473176 },
+      gal:   { label: '갤런 (gal, 미국)',  factor: 3.78541 },
+    },
+    default: ['L', 'gal'],
+  },
+  area: {
+    name: '넓이',
+    base: 'm2',
+    units: {
+      mm2: { label: '제곱밀리미터 (mm²)', factor: 0.000001 },
+      cm2: { label: '제곱센티미터 (cm²)', factor: 0.0001 },
+      m2:  { label: '제곱미터 (m²)',     factor: 1 },
+      km2: { label: '제곱킬로미터 (km²)', factor: 1000000 },
+      ha:  { label: '헥타르 (ha)',       factor: 10000 },
+      ac:  { label: '에이커 (ac)',       factor: 4046.8564224 },
+      py:  { label: '평',                factor: 3.305785 },
+    },
+    default: ['m2', 'py'],
+  },
+  time: {
+    name: '시간',
+    base: 's',
+    units: {
+      ms:  { label: '밀리초 (ms)', factor: 0.001 },
+      s:   { label: '초 (s)',     factor: 1 },
+      min: { label: '분 (min)',   factor: 60 },
+      h:   { label: '시간 (h)',   factor: 3600 },
+      day: { label: '일 (day)',   factor: 86400 },
+      wk:  { label: '주 (week)',  factor: 604800 },
+      yr:  { label: '년 (year)',  factor: 31557600 },
+    },
+    default: ['h', 'min'],
+  },
+};
+
+let currentCat = 'length';
+
+const fromVal = document.getElementById('fromVal');
+const toVal = document.getElementById('toVal');
+const fromUnit = document.getElementById('fromUnit');
+const toUnit = document.getElementById('toUnit');
+const resultText = document.getElementById('resultText');
+const resultLabel = document.getElementById('resultLabel');
+
+const tempToBase = (v, u) => {
+  if (u === 'C') return v;
+  if (u === 'F') return (v - 32) * 5 / 9;
+  if (u === 'K') return v - 273.15;
+};
+const tempFromBase = (v, u) => {
+  if (u === 'C') return v;
+  if (u === 'F') return v * 9 / 5 + 32;
+  if (u === 'K') return v + 273.15;
+};
+
+const formatNum = (n) => {
+  if (!isFinite(n)) return '—';
+  if (n === 0) return '0';
+  const abs = Math.abs(n);
+  if (abs >= 1e9 || abs < 1e-4) return n.toExponential(4);
+  return parseFloat(n.toPrecision(8)).toString();
+};
+
+const populateUnits = () => {
+  const cat = UNITS[currentCat];
+  fromUnit.innerHTML = '';
+  toUnit.innerHTML = '';
+  Object.entries(cat.units).forEach(([key, u]) => {
+    fromUnit.insertAdjacentHTML('beforeend', `<option value="${key}">${u.label}</option>`);
+    toUnit.insertAdjacentHTML('beforeend', `<option value="${key}">${u.label}</option>`);
+  });
+  fromUnit.value = cat.default[0];
+  toUnit.value = cat.default[1];
+};
+
+const convert = () => {
+  const cat = UNITS[currentCat];
+  const v = parseFloat(fromVal.value);
+  if (isNaN(v)) { toVal.value = ''; resultText.textContent = '—'; return; }
+  let result;
+  if (cat.custom && currentCat === 'temperature') {
+    const baseVal = tempToBase(v, fromUnit.value);
+    result = tempFromBase(baseVal, toUnit.value);
+  } else {
+    const baseVal = v * cat.units[fromUnit.value].factor;
+    result = baseVal / cat.units[toUnit.value].factor;
+  }
+  toVal.value = formatNum(result);
+  const fromLabel = cat.units[fromUnit.value].label;
+  const toLabel = cat.units[toUnit.value].label;
+  resultLabel.textContent = `${fromLabel} → ${toLabel}`;
+  resultText.textContent = `${formatNum(v)} = ${formatNum(result)}`;
+};
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentCat = tab.dataset.cat;
+    populateUnits();
+    convert();
+  });
+});
+
+document.getElementById('swap').addEventListener('click', () => {
+  const f = fromUnit.value;
+  fromUnit.value = toUnit.value;
+  toUnit.value = f;
+  convert();
+});
+
+[fromVal, fromUnit, toUnit].forEach(el => el.addEventListener('input', convert));
+[fromUnit, toUnit].forEach(el => el.addEventListener('change', convert));
+
+populateUnits();
+convert();
+</script>
+</body>
+</html>
