@@ -57,6 +57,7 @@
   }
   .label { font-size: 12px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
   .value { font-size: 28px; font-weight: 600; margin-top: 4px; }
+  .value.lives { font-size: 20px; letter-spacing: 2px; }
   .next-canvas { background: #0a0a0a; border-radius: 4px; display: block; margin: 8px auto 0; }
   .controls { font-size: 12px; line-height: 1.8; opacity: 0.85; }
   .controls kbd {
@@ -124,6 +125,10 @@
         <div class="value" id="level">1</div>
       </div>
       <div class="box">
+        <div class="label">Lives</div>
+        <div class="value lives" id="lives">❤️❤️❤️</div>
+      </div>
+      <div class="box">
         <div class="label">Next</div>
         <canvas id="next" class="next-canvas" width="120" height="120"></canvas>
       </div>
@@ -134,6 +139,7 @@
         <div><kbd>↑</kbd> 회전</div>
         <div><kbd>Space</kbd> 하드 드롭</div>
         <div><kbd>P</kbd> 일시정지</div>
+        <div style="margin-top:6px; opacity:0.7;">목숨 3개. 게임오버 시 −1</div>
       </div>
     </div>
   </div>
@@ -148,6 +154,8 @@
   const scoreEl = document.getElementById('score');
   const linesEl = document.getElementById('lines');
   const levelEl = document.getElementById('level');
+  const livesEl = document.getElementById('lives');
+  const MAX_LIVES = 3;
   const overlay = document.getElementById('overlay');
   const overlayTitle = document.getElementById('overlayTitle');
   const overlaySub = document.getElementById('overlaySub');
@@ -167,7 +175,7 @@
     L: [[0,0,1],[1,1,1],[0,0,0]],
   };
 
-  let grid, current, next, score, lines, level, dropTimer, lastTime, gameOver, paused;
+  let grid, current, next, score, lines, level, lives, lifeTimeout, dropTimer, lastTime, gameOver, paused;
 
   const newGrid = () => Array.from({ length: ROWS }, () => Array(COLS).fill(null));
 
@@ -290,18 +298,39 @@
     scoreEl.textContent = score;
     linesEl.textContent = lines;
     levelEl.textContent = level;
+    livesEl.textContent = '❤️'.repeat(Math.max(0, lives)) + '🤍'.repeat(MAX_LIVES - Math.max(0, lives));
   };
 
   const spawn = () => {
     current = next || randPiece();
     next = randPiece();
     drawNext();
-    if (collide(grid, current)) {
+    if (collide(grid, current)) loseLife();
+  };
+
+  const loseLife = () => {
+    lives--;
+    updateUI();
+    if (lives <= 0) {
       gameOver = true;
       overlayTitle.textContent = 'GAME OVER';
       overlaySub.textContent = '"새 게임"을 눌러 다시 시작';
       overlay.classList.add('show');
+      return;
     }
+    paused = true;
+    overlayTitle.textContent = '💔 한 목숨을 잃었어요';
+    overlaySub.innerHTML = `남은 목숨: ${'❤️'.repeat(lives)}<br>곧 다시 시작합니다...`;
+    overlay.classList.add('show');
+    clearTimeout(lifeTimeout);
+    lifeTimeout = setTimeout(() => {
+      grid = newGrid();
+      paused = false;
+      overlay.classList.remove('show');
+      lastTime = performance.now();
+      dropTimer = 0;
+      spawn();
+    }, 1500);
   };
 
   const drop = () => {
@@ -355,8 +384,9 @@
   };
 
   const reset = () => {
+    clearTimeout(lifeTimeout);
     grid = newGrid();
-    score = 0; lines = 0; level = 1;
+    score = 0; lines = 0; level = 1; lives = MAX_LIVES;
     gameOver = false; paused = false;
     next = randPiece();
     spawn();
