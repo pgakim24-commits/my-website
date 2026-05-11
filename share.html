@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>공유하기 - My Website</title>
+<meta name="description" content="My Website를 카카오톡 오픈채팅방에 공유하는 방법 안내">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="My Website">
+<meta property="og:title" content="📢 공유하기 - My Website">
+<meta property="og:description" content="카카오톡 오픈채팅방에 사이트를 쉽게 공유하세요. URL 복사·QR 코드 제공.">
+<meta property="og:url" content="https://pgakim24-commits.github.io/my-website/share.html">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:image" content="https://pgakim24-commits.github.io/my-website/og-home.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fee140 0%, #fa709a 100%);
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", sans-serif;
+  color: #1c1c1e;
+  padding: 24px 16px 48px;
+}
+.container { max-width: 720px; margin: 0 auto; }
+header {
+  text-align: center;
+  color: #fff;
+  margin-bottom: 32px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+header h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+header p { font-size: 16px; opacity: 0.95; }
+
+.card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+}
+.card-row { display: flex; gap: 16px; align-items: center; }
+.card-thumb {
+  width: 96px; height: 96px;
+  border-radius: 14px;
+  background: #f2f2f7;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px;
+  flex-shrink: 0;
+}
+.card-thumb.home { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; }
+.card-thumb.calc { background: linear-gradient(135deg, #1c1c1e 0%, #3a3a3c 100%); color: #fff; }
+.card-thumb.tetris { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: #fff; }
+.card-thumb.conv { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; }
+.card-body { flex: 1; min-width: 0; }
+.card-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.card-desc { font-size: 13px; color: #666; margin-bottom: 10px; }
+.url-row {
+  display: flex; gap: 6px; align-items: center;
+  background: #f5f5f7;
+  border-radius: 10px;
+  padding: 6px 8px 6px 12px;
+  font-size: 12px;
+  font-family: ui-monospace, SF Mono, Menlo, monospace;
+  color: #444;
+  overflow: hidden;
+}
+.url-text {
+  flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #1c1c1e;
+  color: #fff;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.btn:hover { background: #ff9500; }
+.btn.copied { background: #34c759; }
+.btn-qr {
+  background: #f2f2f7;
+  color: #1c1c1e;
+  margin-top: 8px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-qr:hover { background: #e5e5ea; }
+.qr-box {
+  display: none;
+  text-align: center;
+  padding-top: 16px;
+  border-top: 1px dashed #e5e5ea;
+  margin-top: 14px;
+}
+.qr-box.show { display: block; }
+.qr-box img { width: 180px; height: 180px; border-radius: 10px; background: #fff; }
+.qr-hint { font-size: 12px; color: #666; margin-top: 8px; }
+
+.guide {
+  background: #fff;
+  border-radius: 20px;
+  padding: 24px;
+  margin-top: 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+}
+.guide h2 {
+  font-size: 18px;
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.guide ol { padding-left: 22px; }
+.guide li { margin-bottom: 8px; font-size: 14px; color: #333; line-height: 1.55; }
+.guide li strong { color: #fa709a; }
+.guide .tip {
+  background: #fff7e0;
+  border-left: 4px solid #ff9500;
+  border-radius: 0 10px 10px 0;
+  padding: 12px 14px;
+  margin-top: 14px;
+  font-size: 13px;
+  color: #5c4400;
+  line-height: 1.55;
+}
+
+.back {
+  display: block;
+  text-align: center;
+  margin-top: 28px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+  opacity: 0.95;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+.back:hover { text-decoration: underline; }
+
+.toast {
+  position: fixed;
+  left: 50%; bottom: 32px;
+  transform: translateX(-50%) translateY(20px);
+  background: #1c1c1e;
+  color: #fff;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0;
+  transition: all 0.25s;
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>📢 공유하기</h1>
+    <p>카카오톡 오픈채팅방에 사이트를 공유해보세요</p>
+  </header>
+
+  <div class="card">
+    <div class="card-row">
+      <div class="card-thumb home">🏠</div>
+      <div class="card-body">
+        <div class="card-title">My Website (메인)</div>
+        <div class="card-desc">미니 프로젝트 모음 페이지</div>
+        <div class="url-row">
+          <span class="url-text" data-url="https://pgakim24-commits.github.io/my-website/">pgakim24-commits.github.io/my-website/</span>
+          <button class="btn" data-copy="https://pgakim24-commits.github.io/my-website/">복사</button>
+        </div>
+        <button class="btn-qr" data-qr="https://pgakim24-commits.github.io/my-website/">📱 QR 코드 보기</button>
+      </div>
+    </div>
+    <div class="qr-box">
+      <img alt="QR" data-qr-src="https://pgakim24-commits.github.io/my-website/">
+      <div class="qr-hint">카메라로 스캔하면 바로 접속됩니다</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-row">
+      <div class="card-thumb calc">🧮</div>
+      <div class="card-body">
+        <div class="card-title">계산기</div>
+        <div class="card-desc">iOS 스타일 사칙연산 계산기</div>
+        <div class="url-row">
+          <span class="url-text">pgakim24-commits.github.io/my-website/calculator.html</span>
+          <button class="btn" data-copy="https://pgakim24-commits.github.io/my-website/calculator.html">복사</button>
+        </div>
+        <button class="btn-qr" data-qr="https://pgakim24-commits.github.io/my-website/calculator.html">📱 QR 코드 보기</button>
+      </div>
+    </div>
+    <div class="qr-box">
+      <img alt="QR" data-qr-src="https://pgakim24-commits.github.io/my-website/calculator.html">
+      <div class="qr-hint">카메라로 스캔하면 바로 접속됩니다</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-row">
+      <div class="card-thumb tetris">🎮</div>
+      <div class="card-body">
+        <div class="card-title">테트리스</div>
+        <div class="card-desc">키보드로 즐기는 클래식 게임</div>
+        <div class="url-row">
+          <span class="url-text">pgakim24-commits.github.io/my-website/tetris.html</span>
+          <button class="btn" data-copy="https://pgakim24-commits.github.io/my-website/tetris.html">복사</button>
+        </div>
+        <button class="btn-qr" data-qr="https://pgakim24-commits.github.io/my-website/tetris.html">📱 QR 코드 보기</button>
+      </div>
+    </div>
+    <div class="qr-box">
+      <img alt="QR" data-qr-src="https://pgakim24-commits.github.io/my-website/tetris.html">
+      <div class="qr-hint">카메라로 스캔하면 바로 접속됩니다</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-row">
+      <div class="card-thumb conv">📐</div>
+      <div class="card-body">
+        <div class="card-title">단위 변환기</div>
+        <div class="card-desc">6가지 카테고리 단위 변환</div>
+        <div class="url-row">
+          <span class="url-text">pgakim24-commits.github.io/my-website/converter.html</span>
+          <button class="btn" data-copy="https://pgakim24-commits.github.io/my-website/converter.html">복사</button>
+        </div>
+        <button class="btn-qr" data-qr="https://pgakim24-commits.github.io/my-website/converter.html">📱 QR 코드 보기</button>
+      </div>
+    </div>
+    <div class="qr-box">
+      <img alt="QR" data-qr-src="https://pgakim24-commits.github.io/my-website/converter.html">
+      <div class="qr-hint">카메라로 스캔하면 바로 접속됩니다</div>
+    </div>
+  </div>
+
+  <div class="guide">
+    <h2>💬 카카오톡 오픈채팅방에 공유하는 방법</h2>
+    <ol>
+      <li>위 카드에서 공유하고 싶은 페이지의 <strong>복사</strong> 버튼을 누릅니다</li>
+      <li>카카오톡 앱을 열고 공유할 <strong>오픈채팅방</strong>으로 이동합니다</li>
+      <li>채팅 입력창을 길게 누른 뒤 <strong>붙여넣기</strong>를 선택합니다</li>
+      <li>전송 버튼을 누르면 잠시 후 <strong>썸네일 미리보기</strong>가 자동으로 나타납니다</li>
+    </ol>
+    <div class="tip">
+      💡 <strong>휴대폰으로 보고 있다면?</strong><br>
+      복사 → 카카오톡 전환 → 오픈채팅방 → 입력창 길게 눌러서 붙여넣기 → 전송<br>
+      <br>
+      💡 <strong>PC 카카오톡이라면?</strong><br>
+      복사(Ctrl/⌘+C) → 카카오톡 채팅방 클릭 → 입력창에 붙여넣기(Ctrl/⌘+V) → Enter
+    </div>
+  </div>
+
+  <div class="guide">
+    <h2>🆕 오픈채팅방을 새로 만들고 싶다면?</h2>
+    <ol>
+      <li>카카오톡 → 하단 <strong>채팅</strong> 탭 또는 <strong>오픈채팅</strong> 탭으로 이동</li>
+      <li>우측 상단 <strong>+ 아이콘</strong> → <strong>오픈채팅 만들기</strong> 선택</li>
+      <li>그룹 채팅방 / 1:1 채팅방 / 오픈 프로필 중 선택</li>
+      <li>방 이름, 소개, 커버 이미지 설정 후 <strong>완료</strong></li>
+      <li>생성된 방의 공유 링크를 친구나 SNS로 보내 초대</li>
+    </ol>
+    <div class="tip">
+      💡 만든 오픈채팅방 링크를 위의 사이트 URL과 함께 공유하면, 사람들이 사이트도 보고 채팅방에도 참여할 수 있어요.
+    </div>
+  </div>
+
+  <a href="index.html" class="back">← 메인으로 돌아가기</a>
+</div>
+
+<div class="toast" id="toast">URL이 복사되었습니다</div>
+
+<script>
+const toast = document.getElementById('toast');
+const showToast = (msg) => {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => toast.classList.remove('show'), 1800);
+};
+
+document.querySelectorAll('[data-copy]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const url = btn.dataset.copy;
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = url; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy');
+      ta.remove();
+    }
+    btn.textContent = '✓ 복사됨';
+    btn.classList.add('copied');
+    showToast('URL이 복사되었습니다');
+    setTimeout(() => {
+      btn.textContent = '복사';
+      btn.classList.remove('copied');
+    }, 1800);
+  });
+});
+
+document.querySelectorAll('[data-qr]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const url = btn.dataset.qr;
+    const card = btn.closest('.card');
+    const qrBox = card.querySelector('.qr-box');
+    const img = qrBox.querySelector('img');
+    if (!img.src) {
+      const target = img.dataset.qrSrc;
+      img.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(target)}`;
+    }
+    qrBox.classList.toggle('show');
+    btn.textContent = qrBox.classList.contains('show') ? '📱 QR 코드 숨기기' : '📱 QR 코드 보기';
+  });
+});
+</script>
+</body>
+</html>
